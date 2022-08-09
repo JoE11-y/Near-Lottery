@@ -1,17 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { toast } from "react-toastify";
 import { Button } from "react-bootstrap";
 import { utils } from "near-api-js";
 import PrevRounds from "./prevRounds";
 import BuyTicketForm from "./buyTicketForm";
 import Loader from "../ui/Loader";
 import { convertTime } from "../../utils";
-import { NotificationSuccess, NotificationError } from "../utils/Notifications";
+import { NotificationSuccess, NotificationError } from "../ui/Notifications";
 import * as lottery from "../../utils/lottery";
 
 const Lottery = () => {
   const account = window.walletConnection.account();
   const [loading, setLoading] = useState(false);
-  const [currlottery, setCurrLottery] = useState({});
+  const [currLottery, setCurrLottery] = useState({});
   const [prevLottery, setPrevLottery] = useState({});
   const [ticketPrice, setTicketPrice] = useState(0);
   const [playerTickets, setPlayerTicket] = useState(0);
@@ -22,10 +23,10 @@ const Lottery = () => {
   const updateLottery = useCallback(async () => {
     try {
       setLoading(true);
-      const lotteryID = await lottery.getLotteryId();
+      const lotteryId = await lottery.getLotteryId();
       const playerId = account.accountId;
-      if (lotteryID > 1) {
-        const prevLotteryID = lotteryID - 1;
+      if (lotteryId > 1) {
+        const prevLotteryID = lotteryId - 1;
         const prevLottery = await lottery.getLottery(prevLotteryID);
         const _playerTickets = await lottery.getPlayerTickets({
           playerId,
@@ -35,11 +36,12 @@ const Lottery = () => {
         setPreviousLotteryPlayerTickets(_playerTickets);
       }
 
-      const _lottery = await lottery.getLottery(lotteryID);
+      const _lottery = await lottery.getLottery(lotteryId);
       const _ticketPrice = await lottery.getTicketPrice();
+      console.log(_ticketPrice);
       const _playerTickets = await lottery.getPlayerTickets({
         playerId,
-        lotteryID,
+        lotteryId,
       });
       setPlayerTicket(_playerTickets);
       setCurrLottery(_lottery);
@@ -49,7 +51,7 @@ const Lottery = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [account]);
 
   //  function to initiate transaction
   const buyTicket = async (noOfTickets, totalAmount) => {
@@ -72,7 +74,7 @@ const Lottery = () => {
 
   useEffect(() => {
     updateLottery();
-  }, []);
+  }, [updateLottery]);
 
   return (
     <>
@@ -90,7 +92,7 @@ const Lottery = () => {
                   </p>
                   <p>
                     <strong>Lottery Ends In: </strong>{" "}
-                    {convertTime(currlottery.lotteryEndTime)}
+                    {convertTime(currLottery.lotteryEndTime)}
                   </p>
                 </div>
               </div>
@@ -109,7 +111,9 @@ const Lottery = () => {
                 </p>
                 <p>
                   <strong>Prize: </strong>{" "}
-                  {utils.format.formatNearAmount(lottery.amountInLottery / 2)}{" "}
+                  {utils.format.formatNearAmount(
+                    currLottery.amountInLottery / 2
+                  )}{" "}
                   NEAR
                 </p>
                 <p>

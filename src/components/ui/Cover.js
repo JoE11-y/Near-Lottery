@@ -14,7 +14,7 @@ const Cover = ({ name, login, coverImg }) => {
             className=" ratio ratio-1x1 mx-auto mb-2"
             style={{ maxWidth: "320px" }}
           >
-            <img src={coverImg} alt="" className="App-logo" />
+            <img src={coverImg} alt="" />
           </div>
           <h1>{name}</h1>
           <p>Please connect your wallet to continue.</p>

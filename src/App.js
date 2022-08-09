@@ -3,7 +3,7 @@ import { Container, Nav } from "react-bootstrap";
 import { login, logout as destroy, accountBalance } from "./utils/near";
 import { Notification } from "./components/ui/Notifications";
 import Wallet from "./components/Wallet";
-import Cover from "./components/utils/Cover";
+import Cover from "./components/ui/Cover";
 import Lottery from "./components/Lottery/Lottery";
 import coverImg from "./components/assets/img/balls.png";
 import "./App.css";
@@ -16,7 +16,7 @@ const App = function AppWrapper() {
     if (account.accountId) {
       setBalance(await accountBalance());
     }
-  });
+  }, [account]);
 
   useEffect(() => {
     getBalance();
@@ -32,9 +32,9 @@ const App = function AppWrapper() {
               <Nav.Item>
                 {/*display user wallet*/}
                 <Wallet
-                  address={address}
-                  amount={balance.cUSD}
-                  symbol="cUSD"
+                  address={account.accountId}
+                  amount={balance}
+                  symbol="NEAR"
                   destroy={destroy}
                 />
               </Nav.Item>

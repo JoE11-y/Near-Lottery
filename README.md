@@ -1,4 +1,4 @@
-# NFT Lottery
+# NEAR Lottery
 
 This is a re-implementation of my CELO201 Course Bounty Submission for DACADE. This implementation is built to work with the Near Protocol Testnet.
 
@@ -44,7 +44,7 @@ npm install
 npm start
 ```
 
-To properly test the dapp you will need to have created a Near testnet account.
+To properly test the dapp you will need to have a Near testnet account.
 [Create Account](https://wallet.testnet.near.org/)
 
 

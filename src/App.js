@@ -1,22 +1,31 @@
-import React from "react";
+import React, { useEffect, useCallback, useState } from "react";
 import { Container, Nav } from "react-bootstrap";
-import { useContractKit } from "@celo-tools/use-contractkit";
+import { login, logout as destroy, accountBalance } from "./utils/near";
 import { Notification } from "./components/ui/Notifications";
 import Wallet from "./components/Wallet";
-import Cover from "./components/Cover";
-import NFTLottery from "./components/NFTLottery/NFTLottery";
-import { useBalance, useNFTLotteryContract } from "./hooks";
+import Cover from "./components/utils/Cover";
+import Lottery from "./components/Lottery/Lottery";
+import coverImg from "./components/assets/img/balls.png";
 import "./App.css";
 
 const App = function AppWrapper() {
-  const { address, destroy, connect } = useContractKit();
-  const { balance } = useBalance();
-  const NFTLotteryContract = useNFTLotteryContract();
+  const account = window.walletConnection.account();
+  const [balance, setBalance] = useState("0");
+
+  const getBalance = useCallback(async () => {
+    if (account.accountId) {
+      setBalance(await accountBalance());
+    }
+  });
+
+  useEffect(() => {
+    getBalance();
+  }, [getBalance]);
 
   return (
     <>
       <Notification />
-      {address ? (
+      {account.accountId ? (
         <>
           <Container fluid="md" className="hero">
             <Nav className="justify-content-end pt-3 pb-5">
@@ -38,15 +47,11 @@ const App = function AppWrapper() {
             </div>
             {/* display cover */}
           </Container>
-          <NFTLottery NFTLotteryContract={NFTLotteryContract} />
+          <Lottery />
         </>
       ) : (
         // display cover if user is not connected
-        <div className="App">
-          <header className="App-header">
-            <Cover connect={connect} />
-          </header>
-        </div>
+        <Cover name="NEAR LOTTERY" login={login} coverImg={coverImg} />
       )}
     </>
   );

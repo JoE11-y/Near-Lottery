@@ -1,67 +1,79 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "react-bootstrap";
-import {
-  getLottery,
-  getCurrentLotteryID,
-  checkTicketPrice,
-  getPlayerTicketCount,
-} from "../../utils/NFTLottery";
-import { useContractKit } from "@celo-tools/use-contractkit";
-import { formatBigNumber } from "../../utils";
+import { utils } from "near-api-js";
 import PrevRounds from "./prevRounds";
 import BuyTicketForm from "./buyTicketForm";
-import BigNumber from "bignumber.js";
 import Loader from "../ui/Loader";
 import { convertTime } from "../../utils";
+import { NotificationSuccess, NotificationError } from "../utils/Notifications";
+import * as lottery from "../../utils/lottery";
 
-const NFTLottery = ({ NFTLotteryContract }) => {
-  const { kit } = useContractKit();
+const Lottery = () => {
+  const account = window.walletConnection.account();
   const [loading, setLoading] = useState(false);
-  const [lottery, setLottery] = useState({});
+  const [currlottery, setCurrLottery] = useState({});
   const [prevLottery, setPrevLottery] = useState({});
   const [ticketPrice, setTicketPrice] = useState(0);
   const [playerTickets, setPlayerTicket] = useState(0);
+  const [previousLotteryPlayerTickets, setPreviousLotteryPlayerTickets] =
+    useState(0);
   const [open, openModal] = useState(false);
 
-  useEffect(() => {
-    try {
-      if (NFTLotteryContract) {
-        updateLottery();
-      }
-    } catch (error) {
-      console.log({ error });
-    }
-  }, [NFTLotteryContract, getLottery]);
-
-  const updateLottery = async () => {
+  const updateLottery = useCallback(async () => {
     try {
       setLoading(true);
-      const lotteryID = await getCurrentLotteryID(NFTLotteryContract);
-      if (lotteryID > 2) {
+      const lotteryID = await lottery.getLotteryId();
+      const playerId = account.accountId;
+      if (lotteryID > 1) {
         const prevLotteryID = lotteryID - 1;
-        const prevLottery = await getLottery(NFTLotteryContract, {
-          prevLotteryID,
+        const prevLottery = await lottery.getLottery(prevLotteryID);
+        const _playerTickets = await lottery.getPlayerTickets({
+          playerId,
+          prevLottery,
         });
         setPrevLottery(prevLottery);
+        setPreviousLotteryPlayerTickets(_playerTickets);
       }
 
-      const address = kit.defaultAccount;
-      const _lottery = await getLottery(NFTLotteryContract, { lotteryID });
-      const _ticketPrice = await checkTicketPrice(NFTLotteryContract);
-      const _playerTickets = await getPlayerTicketCount(NFTLotteryContract, {
-        address,
+      const _lottery = await lottery.getLottery(lotteryID);
+      const _ticketPrice = await lottery.getTicketPrice();
+      const _playerTickets = await lottery.getPlayerTickets({
+        playerId,
         lotteryID,
       });
-
       setPlayerTicket(_playerTickets);
-      setLottery(_lottery);
+      setCurrLottery(_lottery);
       setTicketPrice(_ticketPrice);
     } catch (e) {
       console.log({ e });
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  //  function to initiate transaction
+  const buyTicket = async (noOfTickets, totalAmount) => {
+    try {
+      await lottery
+        .buyTicket({
+          noOfTickets,
+          totalAmount,
+        })
+        .then((resp) => {
+          toast(<NotificationSuccess text="Tickets bought successfully" />);
+          updateLottery();
+        });
+    } catch (error) {
+      toast(<NotificationError text="Failed to purchase Ticket" />);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    updateLottery();
+  }, []);
+
   return (
     <>
       {!loading ? (
@@ -74,31 +86,31 @@ const NFTLottery = ({ NFTLotteryContract }) => {
               <div className="lottery-header">
                 <div>
                   <p>
-                    <strong>ID: </strong> {lottery.ID}
+                    <strong>ID: </strong> {currLottery.ID}
                   </p>
                   <p>
                     <strong>Lottery Ends In: </strong>{" "}
-                    {convertTime(lottery.lotteryEndTime)}
+                    {convertTime(currlottery.lotteryEndTime)}
                   </p>
                 </div>
               </div>
               <div className="lottery-body">
                 <p>
                   <strong>Price Per Ticket: </strong>{" "}
-                  {formatBigNumber(new BigNumber(ticketPrice))} cUSD
+                  {utils.format.formatNearAmount(ticketPrice)} NEAR
                 </p>
                 <p>
                   <strong>No Of tickets Sold: </strong>
-                  {lottery.noOfTicketsSold}
+                  {currLottery.noOfTicketsSold}
                 </p>
                 <p>
                   <strong>Participants: </strong>
-                  {lottery.noOfPlayers}
+                  {currLottery.noOfPlayers}
                 </p>
                 <p>
                   <strong>Prize: </strong>{" "}
-                  {formatBigNumber(new BigNumber(lottery.amountInLottery / 2))}{" "}
-                  cUSD
+                  {utils.format.formatNearAmount(lottery.amountInLottery / 2)}{" "}
+                  NEAR
                 </p>
                 <p>
                   <strong>Your Tickets: </strong>
@@ -118,9 +130,10 @@ const NFTLottery = ({ NFTLotteryContract }) => {
           </div>
 
           <PrevRounds
-            NFTLotteryContract={NFTLotteryContract}
+            playerId={account.accountId}
             prevLottery={prevLottery}
             ticketPrice={ticketPrice}
+            previousLotteryPlayerTickets={previousLotteryPlayerTickets}
           />
         </>
       ) : (
@@ -128,14 +141,14 @@ const NFTLottery = ({ NFTLotteryContract }) => {
       )}
       {open && (
         <BuyTicketForm
-          NFTLotteryContract={NFTLotteryContract}
           ticketPrice={ticketPrice}
           open={open}
           onClose={() => openModal(false)}
+          buyTicket={buyTicket}
         />
       )}
     </>
   );
 };
 
-export default NFTLottery;
+export default Lottery;

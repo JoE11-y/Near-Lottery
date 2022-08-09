@@ -1,7 +1,5 @@
 import React from "react";
 import { Dropdown, Stack, Spinner } from "react-bootstrap";
-import { formatBigNumber, truncateAddress } from "./../utils";
-import Identicon from "./ui/Identicon";
 
 const Wallet = ({ address, amount, symbol, destroy }) => {
   if (address) {
@@ -16,27 +14,24 @@ const Wallet = ({ address, amount, symbol, destroy }) => {
           >
             {amount ? (
               <>
-                {formatBigNumber(amount)}{" "}
-                <span className="ms-1"> {symbol}</span>
+                {amount} <span className="ms-1"> {symbol}</span>
               </>
             ) : (
               <Spinner animation="border" size="sm" className="opacity-25" />
             )}
-            <Identicon address={address} size={28} className="ms-2 me-1" />
           </Dropdown.Toggle>
 
           <Dropdown.Menu className="shadow-lg border-0">
             <Dropdown.Item
-              href={`https://alfajores-blockscout.celo-testnet.org/address/${address}/transactions`}
+              href={`https://explorer.testnet.near.org/accounts/${address}`}
               target="_blank"
             >
               <Stack direction="horizontal" gap={2}>
                 <i className="bi bi-person-circle fs-4" />
-                <span className="font-monospace">
-                  {truncateAddress(address)}
-                </span>
+                <span className="font-monospace">{address}</span>
               </Stack>
             </Dropdown.Item>
+
             <Dropdown.Divider />
             <Dropdown.Item
               as="button"

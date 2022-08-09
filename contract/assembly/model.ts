@@ -1,19 +1,19 @@
-import {  storage, PersistentUnorderedMap, logging, u128, context, RNG, ContractPromiseBatch } from "near-sdk-core";
+import { storage, PersistentUnorderedMap, logging, u128, context, RNG, ContractPromiseBatch } from "near-sdk-core";
 
-@nearBindgen 
-class Tickets{
+@nearBindgen
+class Tickets {
     private _count: i32 = 0;
 
     public get value(): i32 {
-      return this._count
+        return this._count
     }
 
     public set update(value: i32) {
         this._count = value;
     }
-  
+
     constructor(value: i32 = 0) {
-      this._count = value
+        this._count = value
     }
 }
 
@@ -29,7 +29,7 @@ export class Lottery {
     lotteryEndTime: u64;
     ticketIds: PersistentUnorderedMap<u32, string>; //keeps track of ticketIds to their owners
     playersTickets: PersistentUnorderedMap<string, Tickets>; // keeps track of noOfTickets each player has bought
-   
+
     public static startLottery(id: i32): Lottery { //static method that takses a payload and returns a new Product object
         const lottery = new Lottery();
         lottery.id = id;
@@ -43,7 +43,7 @@ export class Lottery {
         lottery.playersTickets = new PersistentUnorderedMap<string, Tickets>("");
         return lottery;
     }
-    
+
     // if lottery is not valid, we simply just restart that same lottery
     public restartLottery(): void {
         this.lotteryStartTime = context.blockTimestamp;
@@ -51,19 +51,19 @@ export class Lottery {
         update_rollover_status(false);
     }
 
-    public buyTicket(noOfTickets: u32, totalAmount: u128): void {  
+    public buyTicket(noOfTickets: u32, totalAmount: u128): void {
         //check if lottery has ended
-        if(context.blockTimestamp > this.lotteryEndTime){
+        if (context.blockTimestamp > this.lotteryEndTime) {
             throw new Error("Lottery has already ended")
         }
 
         const playerExistingTickets = getPlayerTickets(this.id, context.predecessor);
 
         //check if player already has a ticket, else update number of players
-        if(!playerExistingTickets){
+        if (!playerExistingTickets) {
             this.noOfPlayers = this.noOfPlayers + 1;
         }
-        
+
         //update ticketIds Mapping and their owners;
         const oldTicketCount = this.noOfTicketsSold;
         const newTotal = oldTicketCount + noOfTickets;
@@ -87,12 +87,12 @@ export class Lottery {
 
     public getWinningTicket(): void {
         // check if lottery has not ended
-        if(context.blockTimestamp < this.lotteryEndTime){
+        if (context.blockTimestamp < this.lotteryEndTime) {
             throw new Error("Lottery has not already ended")
         }
 
         // check if valid raffle lottery criterias are met
-        if(this.noOfTicketsSold < 5 || this.noOfPlayers < 2){
+        if (this.noOfTicketsSold < 5 || this.noOfPlayers < 2) {
             update_rollover_status(true);
             setState(State.IDLE);
             return
@@ -103,7 +103,7 @@ export class Lottery {
         this.winningTicket = ticketID;
         var winner = this.ticketIds.get(ticketID);
 
-        if(winner === null){
+        if (winner === null) {
             throw new Error("Error in random generator")
         }
         this.winner = winner;
@@ -126,7 +126,7 @@ export const Lotteries = new PersistentUnorderedMap<i32, Lottery>("Lotteries");
 export function getLottery(id: i32): Lottery {
     const _lottery = Lotteries.get(id);
 
-    if(_lottery === null){
+    if (_lottery === null) {
         throw new Error('Invalid lottery ID')
     }
 
@@ -134,7 +134,7 @@ export function getLottery(id: i32): Lottery {
 }
 
 //2days in nanoseconds
-const interval : u32 = (2 * 24 * 60 * 60 * 1000000);
+const interval: u32 = (2 * 24 * 60 * 60 * 1000000);
 
 //Lottery states
 export enum State {
@@ -144,20 +144,20 @@ export enum State {
     PAYOUT
 }
 
-const initialState : State = State.INACTIVE;
+const initialState: State = State.INACTIVE;
 
 export function setState(state: State): void {
     storage.set<State>("lotteryState", state)
 }
 
 export function getState(): State {
-    if(!storage.contains("lotteryState")) {return initialState}
+    if (!storage.contains("lotteryState")) { return initialState }
     return storage.getSome<State>("lotteryState")
 }
 
 //Lottery ID
 
-const lotteryId : i32 = 0;
+const lotteryId: i32 = 0;
 
 export function updateLotteryId(lotteryId: i32): void {
     storage.set<i32>("id", lotteryId)
@@ -187,12 +187,12 @@ export function set_operator(operator: string): void {
 }
 
 export function get_operator(): string {
-    return storage.getPrimitive<string>("operator", "nearpetshop.devfrank.testnet")
+    return storage.getPrimitive<string>("operator", "nearlottery.blockydev.testnet")
 }
 
 //Rollover Status
 function update_rollover_status(status: bool): void {
-    storage.set<bool>('rollover', status )
+    storage.set<bool>('rollover', status)
 }
 export function check_rollover(): bool {
     return storage.getPrimitive<bool>('rollover', false)
@@ -204,21 +204,21 @@ export function check_rollover(): bool {
 //Return players existing tickets
 export function getPlayerTickets(lotteryID: i32, playerId: string): Tickets {
     const lotteryInstance = Lotteries.get(lotteryID);
-    if(lotteryInstance === null){
+    if (lotteryInstance === null) {
         throw new Error('Invalid Lottery ID');
     }
     const playersTickets = lotteryInstance.playersTickets
 
     const playerLotteryTickets = playersTickets.get(playerId);
 
-    if(playerLotteryTickets === null){
+    if (playerLotteryTickets === null) {
         return new Tickets();
-    }else{
+    } else {
         return playerLotteryTickets;
     }
 }
 
-function getRandom(): u32{
+function getRandom(): u32 {
     const rng = new RNG<u32>(1, u32.MAX_VALUE);
     const roll = rng.next();
     logging.log("roll: " + roll.toString());
@@ -228,7 +228,7 @@ function getRandom(): u32{
 export function checkState(state: State): bool {
     const currState: State = getState();
 
-    if(state !== currState){
+    if (state !== currState) {
         throw new Error("current state does not allow this")
     }
 

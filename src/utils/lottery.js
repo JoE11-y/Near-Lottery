@@ -1,4 +1,14 @@
 const GAS = 100000000000000;
+export const init = {
+  ID: 0,
+  winner: "null.testnet",
+  noOfTicketsSold: 0,
+  noOfPlayers: 0,
+  winningTicket: 0,
+  amountInLottery: 0,
+  lotteryStartTime: 0,
+  lotteryEndTime: 0,
+};
 
 export function buyTicket({ noOfTickets, totalAmount }) {
   return window.contract.buyTicket({ noOfTickets }, GAS, totalAmount);

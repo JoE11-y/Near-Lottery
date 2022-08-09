@@ -3,6 +3,7 @@ import { getLottery, getPlayerTickets } from "../../utils/lottery";
 import { convertTime } from "../../utils";
 import { utils } from "near-api-js";
 import Loader from "../ui/Loader";
+import { init } from "../../utils/lottery";
 
 const PrevRounds = ({
   playerId,
@@ -11,16 +12,6 @@ const PrevRounds = ({
   previousLotteryPlayerTickets,
 }) => {
   const [loading, setLoading] = useState(false);
-  const init = {
-    ID: 0,
-    winner: "null.testnet",
-    noOfTicketsSold: 0,
-    noOfPlayers: 0,
-    winningTicket: 0,
-    amountInLottery: 0,
-    lotteryStartTime: 0,
-    lotteryEndTime: 0,
-  };
 
   const _lottery = prevLottery.ID ? prevLottery : init;
 

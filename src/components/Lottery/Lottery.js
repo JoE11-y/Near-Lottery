@@ -8,6 +8,7 @@ import Loader from "../ui/Loader";
 import { convertTime } from "../../utils";
 import { NotificationSuccess, NotificationError } from "../ui/Notifications";
 import * as lottery from "../../utils/lottery";
+import { init } from "../../utils/lottery";
 
 const Lottery = () => {
   const account = window.walletConnection.account();
@@ -38,13 +39,12 @@ const Lottery = () => {
 
       const _lottery = await lottery.getLottery(lotteryId);
       const _ticketPrice = await lottery.getTicketPrice();
-      console.log(_ticketPrice);
       const _playerTickets = await lottery.getPlayerTickets({
         playerId,
         lotteryId,
       });
       setPlayerTicket(_playerTickets);
-      setCurrLottery(_lottery);
+      setCurrLottery(_lottery ? _lottery : init);
       setTicketPrice(_ticketPrice);
     } catch (e) {
       console.log({ e });

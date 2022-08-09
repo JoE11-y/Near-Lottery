@@ -1,20 +1,18 @@
 # NFT Lottery
 
-[link to demo](https://joe11-y.github.io/NFT-Lottery-Frontend/)
-
 A simple lottery contract that awards a lucky winner with a minted nft and half of the generated prizepot.
-Lottery is currently set to run every 2 weeks as a default.
+Lottery is currently set to run every 2 days as a default.
 
-Check **Operator** and **Updates** sections for how to operate lottery.
+Check **Operator** section for how to operate lottery.
 
 
 ## 1. Tech Stack
 This boilerplate uses the following tech stack:
 - [React](https://reactjs.org/) - A JavaScript library for building user interfaces.
-- [use-Contractkit](contractkit
-) - A frontend library for interacting with the Celo blockchain.
-- [Hardhat](https://hardhat.org/) - A tool for writing and deploying smart contracts.
+- [near-sdk-as](contractkit
+) - A frontend library for interacting with the Near Protocol Testnet.
 - [Bootstrap](https://getbootstrap.com/) - A CSS framework that provides responsive, mobile-first layouts.
+
 
 ## 2. Quick Start
 
@@ -23,13 +21,13 @@ To get this project up running locally, follow these simple steps:
 ### 2.1 Clone the repository:
 
 ```bash
-git clone https://github.com/JoE11-y/NFT-Lottery-Frontend.git
+git clone https://github.com/JoE11-y/Near-Lottery.git
 ```
 
 ### 2.2 Navigate to the directory:
 
 ```bash
-cd NFT-Lottery-Frontend
+cd Near-Lottery
 ```
 
 ### 2.3 Install the dependencies:
@@ -44,40 +42,39 @@ npm install
 npm start
 ```
 
-To properly test the dapp you will need to have a Celo wallet with testnet tokens.
-This learning module [NFT Contract Development with Hardhat](https://hackmd.io/exuZTH2hTqKytn2vxgDmcg) will walk you through the process of creating a Metamask wallet and claiming Alfajores testnet tokens.
+To properly test the dapp you will need to have created a Near testnet account.
+[Create Account](https://wallet.testnet.near.org/)
+
 
 ## 3. Smart-Contract Deployment
 
-### 3.1 Compile the smart contract
+### 3.1 Navigate to the contract directory:
 
 ```bash
-npx hardhat compile
+cd contract
 ```
 
-### 3.2 Run tests on smart contract
+### 3.2 Install the dependencies:
 
 ```bash
-npx hardhat test
+yarn install
+npm install near-cli
 ```
 
-### 3.3 Update env file
-
-- Create a file in the root directory called ".env"
-- Create a key called ACCOUNT_KEY and paste in your private key. e.g
-
-```js
-ACCONT_KEY = "...";
-```
-You can find more details about the whole process in the Dacade [NFT Contract Development with Hardhat](https://hackmd.io/exuZTH2hTqKytn2vxgDmcg) learning module. It will also show you how to get testnet tokens for your account so you can deploy your smart contract in the next step.
-
-### 3.5 Deploy the smart contract to the Celo testnet Aljafores
+### 3.3 Compile the smart contract
 
 ```bash
-npx hardhat run --network alfajores scripts/deploy-NFT.js
+yarn asb
 ```
 
-This command will deploy the contract to the testnet and also initiate the first lottery section, then it updates the src/contract files with the deployed smart contract ABI and contract address.
+### 3.4 Deploy the smart contract to the Near Protocol Testnet
+
+```bash
+near deploy --accountId={ACCOUNT_ID} --wasmFile=build/release/near-lottery.wasm
+```
+
+This command will deploy the contract to the accountId on the testnet. The accountId now becomes the contract name
+
 
 ## 4. Operator Section
 
@@ -86,55 +83,34 @@ This section contains node-js terminal scripts to be run to control the operatio
 ### 4.1 Setting the operator
 
 ```bash
-node ./operator/setOperator.js --operatorAddress {your address}
+near call {contractname} init '{"operator":"{operatorAccount}", "TICKET_PRICE":"{ticketPrice}"}' --accountId={contractname}
 ```
 
-This sets the operator address giving that address access to functions like starting the lottery and other admin restricted functions.
+This sets the operator account giving that account access to functions like starting the lottery and other operator restricted functions, ticketPrice is in yoctoNear (10^24) Near.
 
-
-### 4.2 Withdraw Contract Funds
-
-```bash
-node ./operator/withdrawContractFunds.js 
-```
-
-This command allows the lottery owner to be able to withdraw his own winnings from the lottery, function can only be called after the has been paid off.
-
-### 4.3 Update Lottery Interval
+### 4.2 Starting the Lottery
 
 ```bash
-node ./operator/updateLotteryInterval.js --interval {interval} --timeUnit {timeUnit}
-```
-- This command allows the operator to be change the lottery interval, i.e. how long a lottery session can last.
-
-- The value for interval can only be a number/integer, while for the timeUnit can only be in the string format and the accepted values are (seconds, minutes, hours, days and weeks) any other format will result in function failure.
-
-## 5. Updates Section
-From the Feedbacks and PRs made by contributors on the dacade platform, some contract optimization has been made and also there's now an option to use Hardhat to perform admin operations on the NFTLottery. 
-
-### 5.1 Starting the Lottery
-
-```bash
-npx hardat run ./script/startLottery.js --network alfajores
+near call {contractname} startLottery --accountId={operatorAccount}
 ```
 
 This command will start a new lottery session
 
-### 5.2 Getting the winning ticket
+### 4.3 Getting the winning ticket
 
 ```bash
-npx hardhat run ./script/getWinningTickets.js --network alfajores
+near call {contractname} getWinningTicket --accountId={operatorAccount}
 ```
 
 This command gets the winning the ticket for that lottery session, can be only ran once the current lottery session time range has been exhausted.
 
-### 5.3 Payout Winner
+### 4.4 Payout Winner
 
 ```bash
-npx hardhat run ./script/payoutWinner.js --network alfajores
+near call {contractname} payoutWinner --accountId={operatorAccount}
 ```
 
-This command pays out the winner, after the winning ticket has been gotten. The function also sets the lottery state to idle, meaning a new lottery session can be started.
+This command pays out the winner, after the winning ticket has been gotten. The function also sets the lottery state to idle, meaning a new lottery session can be started. It also sends out a portion of the remaining amount in the lottery to the contract owner, while the rest are left as storage fees for the contract.
 
 
 ## Dev Opinion

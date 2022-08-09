@@ -124,6 +124,10 @@ export function payoutWinner(): void {
 
 export function getPlayerTickets(playerId: string, lotteryId: i32): i32 {
     // return no of player tickets
+    if (lotteryId == 0) {
+        //meaning that lottery has not been iniitiated
+        return 0
+    }
     return lottery.getPlayerTickets(lotteryId, playerId).value
 }
 

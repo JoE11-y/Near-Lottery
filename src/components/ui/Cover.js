@@ -16,8 +16,10 @@ const Cover = ({ name, login, coverImg }) => {
           >
             <img src={coverImg} alt="" />
           </div>
-          <h1>{name}</h1>
-          <p>Please connect your wallet to continue.</p>
+          <h1 className="mt-auto text-light">{name}</h1>
+          <p className="mt-auto text-light">
+            Please connect your wallet to continue.
+          </p>
           <Button
             onClick={login}
             variant="outline-light"

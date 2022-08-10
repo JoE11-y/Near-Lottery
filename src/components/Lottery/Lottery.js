@@ -87,7 +87,7 @@ const Lottery = () => {
               <div className="lottery-header">
                 <div>
                   <p>
-                    <strong>ID: </strong> {currLottery.ID}
+                    <strong>ID: </strong> {currLottery.id}
                   </p>
                   <p>
                     <strong>Lottery Ends: </strong>{" "}

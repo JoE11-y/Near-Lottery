@@ -30,18 +30,17 @@ const Lottery = () => {
         const prevLotteryID = lotteryId - 1;
         const prevLottery = await lottery.getLottery(prevLotteryID);
         const _playerTickets = await lottery.getPlayerTickets({
+          id: prevLotteryID,
           playerId,
-          prevLottery,
         });
         setPrevLottery(prevLottery);
         setPreviousLotteryPlayerTickets(_playerTickets);
       }
-
       const _lottery = await lottery.getLottery(lotteryId);
       const _ticketPrice = await lottery.getTicketPrice();
       const _playerTickets = await lottery.getPlayerTickets({
+        id: lotteryId,
         playerId,
-        lotteryId,
       });
       setPlayerTicket(_playerTickets);
       setCurrLottery(_lottery ? _lottery : init);
@@ -91,7 +90,7 @@ const Lottery = () => {
                     <strong>ID: </strong> {currLottery.ID}
                   </p>
                   <p>
-                    <strong>Lottery Ends In: </strong>{" "}
+                    <strong>Lottery Ends: </strong>{" "}
                     {convertTime(currLottery.lotteryEndTime)}
                   </p>
                 </div>

@@ -40,9 +40,9 @@ const App = function AppWrapper() {
               </Nav.Item>
             </Nav>
             <div className="header">
-              <p className="title light">CELO NFT Lottery</p>
+              <p className="title light">NEAR Lottery</p>
               <p className="subtitle light">
-                A lottery platform built on top of Celo Blockchain 🔦
+                A lottery platform built on top of Near Protocol 🔦
               </p>
             </div>
             {/* display cover */}

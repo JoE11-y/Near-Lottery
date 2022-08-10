@@ -107,7 +107,9 @@ const PrevRounds = ({
                 </p>
                 <p>
                   <strong>Prize: </strong>{" "}
-                  {utils.format.formatNearAmount(lottery.amountInLottery / 2)}{" "}
+                  {Number(
+                    utils.format.formatNearAmount(lottery.amountInLottery)
+                  ) / 2}{" "}
                   NEAR
                 </p>
                 <p>

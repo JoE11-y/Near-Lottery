@@ -110,9 +110,9 @@ const Lottery = () => {
                 </p>
                 <p>
                   <strong>Prize: </strong>{" "}
-                  {utils.format.formatNearAmount(
-                    currLottery.amountInLottery / 2
-                  )}{" "}
+                  {Number(
+                    utils.format.formatNearAmount(currLottery.amountInLottery)
+                  ) / 2}{" "}
                   NEAR
                 </p>
                 <p>

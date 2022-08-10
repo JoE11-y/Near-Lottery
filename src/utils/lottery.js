@@ -11,7 +11,8 @@ export const init = {
 };
 
 export function buyTicket({ noOfTickets, totalAmount }) {
-  return window.contract.buyTicket({ noOfTickets }, GAS, totalAmount);
+  const tickets = Number(noOfTickets);
+  return window.contract.buyTicket({ noOfTickets: tickets }, GAS, totalAmount);
 }
 
 export function getPlayerTickets({ id, playerId }) {

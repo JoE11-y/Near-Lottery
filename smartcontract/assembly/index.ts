@@ -39,6 +39,8 @@ export function startLottery(): void {
 
         // update lottery in storage
         lottery.Lotteries.set(id, _lottery);
+
+        logging.log("Lottery Restarted")
     } else {
         // update lottery id by 1
         var newId: i32 = id + 1;
@@ -48,11 +50,13 @@ export function startLottery(): void {
 
         // update lottery
         lottery.updateLotteryId(newId);
+
+        logging.log("New Lottery Started")
     }
 
     // update lottery state
     lottery.setState(lottery.State.ACTIVE);
-    logging.log("Lottery Started")
+
 }
 
 export function buyTicket(noOfTickets: u32): void {
@@ -95,8 +99,9 @@ export function getWinningTicket(): void {
     // update lottery in storage
     lottery.Lotteries.set(id, _lottery);
 
-    // update lottery state
-    lottery.setState(lottery.State.PAYOUT)
+    //update lottery state
+    lottery.setState(lottery.State.PAYOUT);
+
     logging.log("Winning Ticket Gotten")
 }
 
@@ -122,13 +127,16 @@ export function payoutWinner(): void {
     logging.log("Payout successful, Lottery Ended")
 }
 
-export function getPlayerTickets(playerId: string, lotteryId: i32): i32 {
-    // return no of player tickets
-    if (lotteryId == 0) {
-        //meaning that lottery has not been iniitiated
+export function getPlayerTickets(id: i32, playerId: string): i32 {
+    // get lottery
+    const _lottery = lottery.Lotteries.get(id);
+
+    if (_lottery === null) {
         return 0
     }
-    return lottery.getPlayerTickets(lotteryId, playerId).value
+
+    // return value of the number of tickets
+    return _lottery.getPlayerTickets(playerId).value
 }
 
 export function getTicketPrice(): u128 {
@@ -149,10 +157,31 @@ export function getLotteryStatus(): lottery.State {
     return lottery.getState();
 }
 
-export function getLottery(id: i32): lottery.Lottery | null {
-    return lottery.Lotteries.get(id);
+export function getLottery(id: i32): lottery.ILottery | null {
+    const _lottery = lottery.Lotteries.get(id);
+
+    if (_lottery === null) {
+        return null
+    }
+
+    const output: lottery.ILottery = {
+        id: _lottery.id,
+        winner: _lottery.winner,
+        noOfTicketsSold: _lottery.noOfTicketsSold,
+        noOfPlayers: _lottery.noOfPlayers,
+        winningTicket: _lottery.winningTicket,
+        amountInLottery: _lottery.amountInLottery,
+        lotteryStartTime: _lottery.lotteryStartTime,
+        lotteryEndTime: _lottery.lotteryEndTime,
+    }
+
+    return output;
 }
 
 export function getLotteryId(): i32 {
     return lottery.getCurrentLotteryId()
+}
+
+export function checkRolloverStatus(): bool {
+    return lottery.check_rollover()
 }

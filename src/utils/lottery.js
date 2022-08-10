@@ -14,8 +14,8 @@ export function buyTicket({ noOfTickets, totalAmount }) {
   return window.contract.buyTicket({ noOfTickets }, GAS, totalAmount);
 }
 
-export function getPlayerTickets({ playerId, lotteryId }) {
-  return window.contract.getPlayerTickets({ playerId, lotteryId });
+export function getPlayerTickets({ id, playerId }) {
+  return window.contract.getPlayerTickets({ id, playerId });
 }
 
 export function getTicketPrice() {

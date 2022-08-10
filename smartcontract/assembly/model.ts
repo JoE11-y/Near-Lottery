@@ -1,7 +1,7 @@
-import { storage, PersistentUnorderedMap, logging, u128, context, RNG, ContractPromiseBatch } from "near-sdk-core";
+import { storage, PersistentMap, PersistentUnorderedMap, logging, u128, context, RNG, ContractPromiseBatch } from "near-sdk-core";
 
 @nearBindgen
-class Tickets {
+export class Tickets {
     private _count: i32 = 0;
 
     public get value(): i32 {
@@ -27,8 +27,8 @@ export class Lottery {
     amountInLottery: u128;
     lotteryStartTime: u64;
     lotteryEndTime: u64;
-    ticketIds: PersistentUnorderedMap<u32, string>; //keeps track of ticketIds to their owners
-    playersTickets: PersistentUnorderedMap<string, Tickets>; // keeps track of noOfTickets each player has bought
+    private ticketIds: PersistentMap<u32, string>; //keeps track of ticketIds to their owners
+    private playersTickets: PersistentMap<string, Tickets>; // keeps track of noOfTickets each player has bought
 
     public static startLottery(id: i32): Lottery { //static method that takses a payload and returns a new Product object
         const lottery = new Lottery();
@@ -40,7 +40,8 @@ export class Lottery {
         lottery.amountInLottery = u128.from(0);
         lottery.lotteryStartTime = context.blockTimestamp;
         lottery.lotteryEndTime = context.blockTimestamp + interval;
-        lottery.playersTickets = new PersistentUnorderedMap<string, Tickets>("");
+        lottery.ticketIds = new PersistentMap<u32, string>('l' + id.toString() + 'ids')
+        lottery.playersTickets = new PersistentMap<string, Tickets>('l' + id.toString() + 'tkts');
         return lottery;
     }
 
@@ -57,10 +58,10 @@ export class Lottery {
             throw new Error("Lottery has already ended")
         }
 
-        const playerExistingTickets = getPlayerTickets(this.id, context.predecessor);
+        const playerExistingTickets = this.getPlayerTickets(context.predecessor);
 
         //check if player already has a ticket, else update number of players
-        if (!playerExistingTickets) {
+        if (!playerExistingTickets.value) {
             this.noOfPlayers = this.noOfPlayers + 1;
         }
 
@@ -94,6 +95,7 @@ export class Lottery {
         // check if valid raffle lottery criterias are met
         if (this.noOfTicketsSold < 5 || this.noOfPlayers < 2) {
             update_rollover_status(true);
+            //update state
             setState(State.IDLE);
             return
         }
@@ -114,10 +116,19 @@ export class Lottery {
         const amountForOwner = u128.div(amountForWinner, u128.from(2));
         ContractPromiseBatch.create(this.winner).transfer(amountForWinner);
         ContractPromiseBatch.create(get_operator()).transfer(amountForOwner);
-
         //this rest stays in the contract for storage
     }
 
+    //Return players existing tickets
+    public getPlayerTickets(playerId: string): Tickets {
+        const playerTickets = this.playersTickets.get(playerId);
+
+        if (playerTickets === null) {
+            return new Tickets();
+        } else {
+            return playerTickets;
+        }
+    }
 }
 
 //Lottery mapping
@@ -134,7 +145,20 @@ export function getLottery(id: i32): Lottery {
 }
 
 //2days in nanoseconds
-const interval: u32 = (2 * 24 * 60 * 60 * 1000000);
+const interval: u64 = (2 * 24 * 60 * 60 * 1000 * 1000000);
+
+@nearBindgen
+export class ILottery {
+    id: i32;
+    winner: string;
+    noOfTicketsSold: u32;
+    noOfPlayers: u32;
+    winningTicket: u32;
+    amountInLottery: u128;
+    lotteryStartTime: u64;
+    lotteryEndTime: u64;
+}
+
 
 //Lottery states
 export enum State {
@@ -180,14 +204,13 @@ export function get_ticket_price(): u128 {
     return storage.getSome<u128>("price")
 }
 
-
 //Set Operator Access
 export function set_operator(operator: string): void {
     storage.set<string>("operator", operator)
 }
 
 export function get_operator(): string {
-    return storage.getPrimitive<string>("operator", "nearlottery.blockydev.testnet")
+    return storage.getPrimitive<string>("operator", "lottery.blockydevjoe.testnet")
 }
 
 //Rollover Status
@@ -198,26 +221,7 @@ export function check_rollover(): bool {
     return storage.getPrimitive<bool>('rollover', false)
 }
 
-
-//Functions
-
-//Return players existing tickets
-export function getPlayerTickets(lotteryID: i32, playerId: string): Tickets {
-    const lotteryInstance = Lotteries.get(lotteryID);
-    if (lotteryInstance === null) {
-        throw new Error('Invalid Lottery ID');
-    }
-    const playersTickets = lotteryInstance.playersTickets
-
-    const playerLotteryTickets = playersTickets.get(playerId);
-
-    if (playerLotteryTickets === null) {
-        return new Tickets();
-    } else {
-        return playerLotteryTickets;
-    }
-}
-
+//Other Functions
 function getRandom(): u32 {
     const rng = new RNG<u32>(1, u32.MAX_VALUE);
     const roll = rng.next();

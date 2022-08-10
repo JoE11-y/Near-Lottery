@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { Modal, Button, Form, FloatingLabel } from "react-bootstrap";
 import { utils } from "near-api-js";
+import BigNumber from "bignumber.js";
 
 const BuyTicketForm = ({ ticketPrice, open, onClose, buyTicket }) => {
-  const [amount, setAmount] = useState(0);
+  const [amount, setAmount] = useState("");
   const [noOfTickets, setTicketNumber] = useState(0);
   const handleClose = () => {
     onClose();
@@ -11,9 +12,14 @@ const BuyTicketForm = ({ ticketPrice, open, onClose, buyTicket }) => {
 
   function onChange(e) {
     const noOfTickets = e.target.value;
-    const amounts = ticketPrice * noOfTickets;
+    const amounts = new BigNumber(ticketPrice)
+      .multipliedBy(noOfTickets)
+      .toNumber();
+    if (isNaN(amounts)) {
+      return;
+    }
     setTicketNumber(noOfTickets);
-    setAmount(amounts);
+    setAmount(amounts.toLocaleString("fullwide", { useGrouping: false }));
   }
 
   function onSubmit() {

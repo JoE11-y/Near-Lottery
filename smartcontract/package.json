@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "Dacade Bounty Tutorial",
   "main": "index.js",
-  "repository": "https://github.com/osas2211/near-pet-shop",
-  "author": "osas2211",
+  "repository": "https://github.com/JoE11-y/Near-Lottery",
+  "author": "JoE11-y",
   "license": "MIT",
   "private": true,
   "devDependencies": {

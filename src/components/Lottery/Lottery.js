@@ -5,7 +5,7 @@ import { utils } from "near-api-js";
 import PrevRounds from "./prevRounds";
 import BuyTicketForm from "./buyTicketForm";
 import Loader from "../ui/Loader";
-import { convertTime } from "../../utils";
+import { convertTime, checkStatus } from "../../utils";
 import { NotificationSuccess, NotificationError } from "../ui/Notifications";
 import * as lottery from "../../utils/lottery";
 import { init } from "../../utils/lottery";
@@ -13,6 +13,7 @@ import { init } from "../../utils/lottery";
 const Lottery = () => {
   const account = window.walletConnection.account();
   const [loading, setLoading] = useState(false);
+  const [lotteryStatus, setLotteryStatus] = useState("0");
   const [currLottery, setCurrLottery] = useState({});
   const [prevLottery, setPrevLottery] = useState({});
   const [ticketPrice, setTicketPrice] = useState(0);
@@ -42,9 +43,12 @@ const Lottery = () => {
         id: lotteryId,
         playerId,
       });
+
+      const status = await lottery.getLotteryStatus();
       setPlayerTicket(_playerTickets);
       setCurrLottery(_lottery ? _lottery : init);
       setTicketPrice(_ticketPrice);
+      setLotteryStatus(status);
     } catch (e) {
       console.log({ e });
     } finally {
@@ -92,6 +96,10 @@ const Lottery = () => {
                   <p>
                     <strong>Lottery Ends: </strong>{" "}
                     {convertTime(currLottery.lotteryEndTime)}
+                  </p>
+                  <p>
+                    <strong>Status: </strong>{" "}
+                    {checkStatus(lotteryStatus, currLottery.lotteryEndTime)}
                   </p>
                 </div>
               </div>

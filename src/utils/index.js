@@ -18,3 +18,30 @@ export function convertTime(nanosecs) {
   });
   return date + ", " + time;
 }
+
+export function checkStatus(status, lotteryEndTime) {
+  const now = new Date();
+  const end = new Date(lotteryEndTime / 1000000);
+
+  if (now > end) {
+    return "Ended, Waiting for payouts";
+  } else {
+    switch (status) {
+      case 0: {
+        return "Inactive";
+      }
+      case 1: {
+        return "Reboot";
+      }
+      case 2: {
+        return "Active";
+      }
+      case 3: {
+        return "Payout";
+      }
+      default: {
+        return "Loading";
+      }
+    }
+  }
+}

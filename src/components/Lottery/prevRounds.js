@@ -27,11 +27,10 @@ const PrevRounds = ({
     setLoading(true);
     e.preventDefault();
     const lotteryID = lotteryId - 1;
-
     if (lotteryID < 1) {
+      setLoading(false);
       return;
     }
-
     const result = await getLottery(lotteryID);
     const _playerTickets = await getPlayerTickets({ playerId, lotteryId });
     setLottery(result);
@@ -44,8 +43,8 @@ const PrevRounds = ({
     setLoading(true);
     e.preventDefault();
     const lotteryID = lotteryId + 1;
-
     if (lotteryID > _lottery.id) {
+      setLoading(false);
       return;
     }
     const result = await getLottery(lotteryID);

@@ -13,9 +13,9 @@ const PrevRounds = ({
 }) => {
   const [loading, setLoading] = useState(false);
 
-  const _lottery = prevLottery.ID ? prevLottery : init;
+  const _lottery = prevLottery.id ? prevLottery : init;
 
-  const [lotteryId, setLotteryID] = useState(_lottery.ID);
+  const [lotteryId, setLotteryID] = useState(_lottery.id);
 
   const [lottery, setLottery] = useState(_lottery);
 
@@ -27,6 +27,7 @@ const PrevRounds = ({
     setLoading(true);
     e.preventDefault();
     const lotteryID = lotteryId - 1;
+
     if (lotteryID < 1) {
       return;
     }
@@ -43,7 +44,8 @@ const PrevRounds = ({
     setLoading(true);
     e.preventDefault();
     const lotteryID = lotteryId + 1;
-    if (lotteryID > _lottery.ID) {
+
+    if (lotteryID > _lottery.id) {
       return;
     }
     const result = await getLottery(lotteryID);

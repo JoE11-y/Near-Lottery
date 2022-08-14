@@ -58,6 +58,7 @@ export class Lottery {
 
     // if lottery is not valid, we simply just restart that same lottery
     public restartLottery(noOfDays: u32): void {
+        this.lotteryPrice = get_ticket_price();
         this.lotteryStartTime = context.blockTimestamp;
         this.lotteryEndTime = context.blockTimestamp + (interval * noOfDays);
         update_rollover_status(false);

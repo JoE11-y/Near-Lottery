@@ -19,10 +19,6 @@ export function getPlayerTickets({ id, playerId }) {
   return window.contract.getPlayerTickets({ id, playerId });
 }
 
-export function getTicketPrice() {
-  return window.contract.getTicketPrice();
-}
-
 export function getLotteryStatus() {
   return window.contract.getLotteryStatus();
 }
@@ -36,8 +32,8 @@ export function getLottery(id) {
 }
 
 //Admin functions
-export function startLottery() {
-  return window.contract.startLottery();
+export function startLottery(noOfDays) {
+  return window.contract.startLottery(noOfDays);
 }
 
 export function getWinningTicket() {

@@ -8,7 +8,6 @@ import { init } from "../../utils/lottery";
 const PrevRounds = ({
   playerId,
   prevLottery,
-  ticketPrice,
   previousLotteryPlayerTickets,
 }) => {
   const [loading, setLoading] = useState(false);
@@ -96,7 +95,7 @@ const PrevRounds = ({
               <div className="lottery-body">
                 <p>
                   <strong>Price Per Ticket: </strong>{" "}
-                  {utils.format.formatNearAmount(ticketPrice)} NEAR
+                  {utils.format.formatNearAmount(lottery.lotteryPrice)} NEAR
                 </p>
                 <p>
                   <strong>No of Tickets Sold: </strong>{" "}

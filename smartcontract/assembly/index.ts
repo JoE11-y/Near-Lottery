@@ -1,8 +1,11 @@
 import * as lottery from "./model";
 import { u128, context, logging } from 'near-sdk-as';
 
-// Init function can only be called once.
-export function init(operator: string, TICKET_PRICE: u128): void {
+/**
+ * Init function can only be called once and it is used to initialize the contract with a lottery operator.
+ * @param operator Account ID of the lottery operator
+ */
+export function init(operator: string): void {
     assert(context.predecessor == context.contractName, "Method init is private");
 
     //check if state is already is still in inactive
@@ -11,23 +14,29 @@ export function init(operator: string, TICKET_PRICE: u128): void {
     // set lottery operator
     lottery.set_operator(operator);
 
-    // set ticket price
-    lottery.set_ticket_price(TICKET_PRICE);
-
     // update lottery state to idle
     lottery.setState(lottery.State.IDLE);
     logging.log("Lottery initiated")
 }
 
-export function startLottery(): void {
+
+/**
+ * startLottery function used to start the next lottery. And to do that, lottery should be in IDLE.
+ * @param TICKET_PRICE Price of the next lottery in u128 format
+ * @param noOfDays How many days after this lottery expires
+ */
+export function startLottery(TICKET_PRICE: u128, noOfDays: u32): void {
     // check if context is operator
     assert(context.sender == lottery.get_operator(), "Access restricted to lottery operator")
 
     // check if lottery state is set to IDLE
     assert(lottery.checkState(lottery.State.IDLE))
 
+    // set ticket price
+    lottery.set_ticket_price(TICKET_PRICE);
+
     // retrieve lottery id from storage
-    var id = lottery.getCurrentLotteryId();
+    let id = lottery.getCurrentLotteryId();
 
     // check if previous lottery was rollovered then update accordingly
     if (lottery.check_rollover()) {
@@ -35,7 +44,7 @@ export function startLottery(): void {
         const _lottery = lottery.getLottery(id);
 
         // restart lottery
-        _lottery.restartLottery();
+        _lottery.restartLottery(noOfDays);
 
         // update lottery in storage
         lottery.Lotteries.set(id, _lottery);
@@ -43,10 +52,10 @@ export function startLottery(): void {
         logging.log("Lottery Restarted")
     } else {
         // update lottery id by 1
-        var newId: i32 = id + 1;
+        let newId: i32 = id + 1;
 
         // start lottery
-        lottery.Lotteries.set(newId, lottery.Lottery.startLottery(newId));
+        lottery.Lotteries.set(newId, lottery.Lottery.startLottery(newId, noOfDays));
 
         // update lottery
         lottery.updateLotteryId(newId);
@@ -59,21 +68,24 @@ export function startLottery(): void {
 
 }
 
+
+/**
+ * buyTicket function used to buy tickets for the current lottery.
+ * */
 export function buyTicket(noOfTickets: u32): void {
     // check if lottery state is set to ACTIVE
     assert(lottery.checkState(lottery.State.ACTIVE));
 
+    // get lottery
+    const id = lottery.getCurrentLotteryId();
+    const _lottery = lottery.getLottery(id);
+
     // get ticket price and calc how much to be spent to purchase tickets
-    const ticketPrice: u128 = getTicketPrice();
-    const amountToBePaid = u128.mul(ticketPrice, u128.from(noOfTickets));
+    const amountToBePaid = u128.mul(_lottery.lotteryPrice, u128.from(noOfTickets));
     // check if attached deposit is up to that amount
     if (amountToBePaid.toString() != context.attachedDeposit.toString()) {
         throw new Error("Insufficient amount")
     }
-
-    // get lottery
-    const id = lottery.getCurrentLotteryId();
-    const _lottery = lottery.getLottery(id);
 
     //initiate ticket purchase
     _lottery.buyTicket(noOfTickets, amountToBePaid);
@@ -82,6 +94,12 @@ export function buyTicket(noOfTickets: u32): void {
     lottery.Lotteries.set(id, _lottery)
 }
 
+
+/**
+ * getWinningTicket function used to generate the winning ticket for the current lottery.
+ * It is only available to lottery operator
+ * @param noOfTickets Number of tickets that the user wants to buy.
+ * */
 export function getWinningTicket(): void {
     // check if context is operator
     assert(context.sender == lottery.get_operator(), "Access restricted to lottery operator")
@@ -105,6 +123,12 @@ export function getWinningTicket(): void {
     logging.log("Winning Ticket Gotten")
 }
 
+
+/**
+ * payoutWinner function used to payout the winning amount for winner of the current lottery.
+ * To do that, lottery should be in PAYOUT state.
+ * It is only available to lottery operator.
+ */
 export function payoutWinner(): void {
     // check if context is operator
     assert(context.sender == lottery.get_operator(), "Access restricted to lottery operator")
@@ -127,6 +151,13 @@ export function payoutWinner(): void {
     logging.log("Payout successful, Lottery Ended")
 }
 
+
+/**
+ * getPlayerTickets function used to get the number of tickets bought by the given user for the given lottery.
+ * @param id Lottery Id
+ * @param playerId User ID
+ * @return Number of tickets bought by the user for the lottery
+ * */
 export function getPlayerTickets(id: i32, playerId: string): i32 {
     // get lottery
     const _lottery = lottery.Lotteries.get(id);
@@ -139,24 +170,21 @@ export function getPlayerTickets(id: i32, playerId: string): i32 {
     return _lottery.getPlayerTickets(playerId).value
 }
 
-export function getTicketPrice(): u128 {
-    return lottery.get_ticket_price();
-}
 
-export function updateTicketPrice(newPrice: u128): void {
-    // check if context is operator
-    assert(context.sender == lottery.get_operator(), "Access restricted to lottery operator")
-
-    // check if lottery state is set to IDLE
-    assert(lottery.checkState(lottery.State.IDLE))
-
-    lottery.set_ticket_price(newPrice);
-}
-
+/**
+ * getLotteryStatus function used to get the current state of the lottery.
+ * @return Current state of the lottery
+ * */
 export function getLotteryStatus(): lottery.State {
     return lottery.getState();
 }
 
+
+/**
+ * getLottery function used to get the details of the given lottery id.
+ * @param id Lottery ID
+ * @return Details of the lottery if present. Otherwise null
+ * */
 export function getLottery(id: i32): lottery.ILottery | null {
     const _lottery = lottery.Lotteries.get(id);
 
@@ -171,6 +199,7 @@ export function getLottery(id: i32): lottery.ILottery | null {
         noOfPlayers: _lottery.noOfPlayers,
         winningTicket: _lottery.winningTicket,
         amountInLottery: _lottery.amountInLottery,
+        lotteryPrice: _lottery.lotteryPrice,
         lotteryStartTime: _lottery.lotteryStartTime,
         lotteryEndTime: _lottery.lotteryEndTime,
     }
@@ -178,10 +207,20 @@ export function getLottery(id: i32): lottery.ILottery | null {
     return output;
 }
 
+
+/**
+ * getLotteryId function used to get the lottery ID of the current active lottery.
+ * @return Lottery ID of the current lottery
+ * */
 export function getLotteryId(): i32 {
     return lottery.getCurrentLotteryId()
 }
 
+
+/**
+ * checkRolloverStatus function used to get the rollover status for the latest lottery.
+ * @return Rollover status for the latest lottery
+ * */
 export function checkRolloverStatus(): bool {
     return lottery.check_rollover()
 }

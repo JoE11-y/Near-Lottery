@@ -1,4 +1,13 @@
-import { storage, PersistentMap, PersistentUnorderedMap, logging, u128, context, RNG, ContractPromiseBatch } from "near-sdk-core";
+import {
+    context,
+    ContractPromiseBatch,
+    logging,
+    PersistentMap,
+    PersistentUnorderedMap,
+    RNG,
+    storage,
+    u128
+} from "near-sdk-core";
 
 @nearBindgen
 export class Tickets {
@@ -25,12 +34,13 @@ export class Lottery {
     noOfPlayers: u32;
     winningTicket: u32;
     amountInLottery: u128;
+    lotteryPrice: u128;
     lotteryStartTime: u64;
     lotteryEndTime: u64;
     private ticketIds: PersistentMap<u32, string>; //keeps track of ticketIds to their owners
     private playersTickets: PersistentMap<string, Tickets>; // keeps track of noOfTickets each player has bought
 
-    public static startLottery(id: i32): Lottery { //static method that takses a payload and returns a new Product object
+    public static startLottery(id: i32, noOfDays: u32): Lottery { //static method that takses a payload and returns a new Product object
         const lottery = new Lottery();
         lottery.id = id;
         lottery.winner = "";
@@ -38,17 +48,18 @@ export class Lottery {
         lottery.noOfPlayers = 0;
         lottery.winningTicket = 0;
         lottery.amountInLottery = u128.from(0);
+        lottery.lotteryPrice = get_ticket_price();
         lottery.lotteryStartTime = context.blockTimestamp;
-        lottery.lotteryEndTime = context.blockTimestamp + interval;
+        lottery.lotteryEndTime = context.blockTimestamp + (interval * noOfDays);
         lottery.ticketIds = new PersistentMap<u32, string>('l' + id.toString() + 'ids')
         lottery.playersTickets = new PersistentMap<string, Tickets>('l' + id.toString() + 'tkts');
         return lottery;
     }
 
     // if lottery is not valid, we simply just restart that same lottery
-    public restartLottery(): void {
+    public restartLottery(noOfDays: u32): void {
         this.lotteryStartTime = context.blockTimestamp;
-        this.lotteryEndTime = context.blockTimestamp + interval;
+        this.lotteryEndTime = context.blockTimestamp + (interval * noOfDays);
         update_rollover_status(false);
     }
 
@@ -62,7 +73,7 @@ export class Lottery {
 
         //check if player already has a ticket, else update number of players
         if (!playerExistingTickets.value) {
-            this.noOfPlayers = this.noOfPlayers + 1;
+            this.noOfPlayers += 1;
         }
 
         //update ticketIds Mapping and their owners;
@@ -73,12 +84,10 @@ export class Lottery {
         }
 
         //update total no of tickets sold
-        this.noOfTicketsSold = this.noOfTicketsSold + noOfTickets;
+        this.noOfTicketsSold += noOfTickets;
 
         // update player ticket mapping
-        const newTicketCount = playerExistingTickets.value + noOfTickets;
-
-        playerExistingTickets.update = newTicketCount;
+        playerExistingTickets.update = playerExistingTickets.value + noOfTickets;
 
         this.playersTickets.set(context.predecessor, playerExistingTickets);
 
@@ -103,7 +112,7 @@ export class Lottery {
         const ticketID = getRandom() % this.noOfTicketsSold;
 
         this.winningTicket = ticketID;
-        var winner = this.ticketIds.get(ticketID);
+        let winner = this.ticketIds.get(ticketID);
 
         if (winner === null) {
             throw new Error("Error in random generator")
@@ -144,8 +153,8 @@ export function getLottery(id: i32): Lottery {
     return _lottery;
 }
 
-//2days in nanoseconds
-const interval: u64 = (2 * 24 * 60 * 60 * 1000 * 1000000);
+//1 day in nanoseconds
+const interval: u64 = (24 * 60 * 60 * 1000 * 1000000);
 
 @nearBindgen
 export class ILottery {
@@ -155,6 +164,7 @@ export class ILottery {
     noOfPlayers: u32;
     winningTicket: u32;
     amountInLottery: u128;
+    lotteryPrice: u128;
     lotteryStartTime: u64;
     lotteryEndTime: u64;
 }

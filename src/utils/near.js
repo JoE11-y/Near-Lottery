@@ -20,7 +20,6 @@ export async function initializeContract() {
       // List here all view methods
       viewMethods: [
         "getPlayerTickets",
-        "getTicketPrice",
         "getLotteryStatus",
         "getLotteryId",
         "getLottery",

@@ -117,10 +117,9 @@ export function getWinningTicket(): void {
     // update lottery in storage
     lottery.Lotteries.set(id, _lottery);
 
-    //update lottery state
-    lottery.setState(lottery.State.PAYOUT);
-
-    logging.log("Winning Ticket Gotten")
+    if(_lottery.winner) {
+        logging.log("Winning Ticket Gotten")
+    }
 }
 
 

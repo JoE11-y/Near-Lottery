@@ -118,6 +118,7 @@ export class Lottery {
             throw new Error("Error in random generator")
         }
         this.winner = winner;
+        setState(State.PAYOUT);
     }
 
     public payoutWinner(): void {

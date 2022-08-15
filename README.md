@@ -80,14 +80,14 @@ near deploy --accountId={ACCOUNT_ID} --wasmFile=build/release/near-lottery.wasm
 This command will deploy the contract to the accountId on the testnet. The accountId now becomes the contract name
 
 
-## 4. Operator Section
+## 4. Operator Section -- Following updates from PR #1
 
 This section contains node-js terminal scripts to be run to control the operation of the lottery.
 
 ### 4.1 Setting the operator
 
 ```bash
-near call {contractname} init '{"operator":"{operatorAccount}", "TICKET_PRICE":"{ticketPrice}"}' --accountId={contractname}
+near call {contractname} init '{"operator":"{operatorAccount}"}' --accountId={contractname}
 ```
 
 This sets the operator account giving that account access to functions like starting the lottery and other operator restricted functions, ticketPrice is in yoctoNear (10^24) Near.
@@ -95,7 +95,7 @@ This sets the operator account giving that account access to functions like star
 ### 4.2 Starting the Lottery
 
 ```bash
-near call {contractname} startLottery --accountId={operatorAccount}
+near call {contractname} startLottery '{"TICKET_PRICE": "{ticketprice}", "noOfDays": "{noOfDays}"}' --accountId={operatorAccount}
 ```
 
 This command will start a new lottery session

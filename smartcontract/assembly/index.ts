@@ -55,7 +55,7 @@ export function startLottery(TICKET_PRICE: u128, noOfDays: u32): void {
         let newId: i32 = id + 1;
 
         // start lottery
-        lottery.Lotteries.set(newId, lottery.Lottery.startLottery(newId, noOfDays));
+        lottery.Lotteries.set(newId, lottery.Lottery.newLottery(newId, noOfDays));
 
         // update lottery
         lottery.updateLotteryId(newId);
@@ -117,7 +117,7 @@ export function getWinningTicket(): void {
     // update lottery in storage
     lottery.Lotteries.set(id, _lottery);
 
-    if(_lottery.winner) {
+    if (_lottery.winner) {
         logging.log("Winning Ticket Gotten")
     }
 }
@@ -148,6 +148,34 @@ export function payoutWinner(): void {
     // update lottery state
     lottery.setState(lottery.State.IDLE);
     logging.log("Payout successful, Lottery Ended")
+}
+
+
+/**
+ * newOperator function used to set a new operator for contract
+ * To do that, lottery should be in IDLE state.
+ * It is only available to contract.
+ */
+export function newOperator(newOperatorId: string): void {
+    // check if context is contract
+    assert(context.predecessor == context.contractName, "Method is private");
+
+    // check if lottery state is set to IDLE
+    assert(lottery.checkState(lottery.State.IDLE))
+
+    // set lottery operator
+    lottery.set_operator(newOperatorId);
+
+    logging.log("New Operator assigned")
+}
+
+
+/**
+ * getLotteryOperator function used to get the lottery operator
+ * @return lottery operator
+ * */
+export function getLotteryOperator(): string {
+    return lottery.get_operator();
 }
 
 

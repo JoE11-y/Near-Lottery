@@ -40,7 +40,7 @@ export class Lottery {
     private ticketIds: PersistentMap<u32, string>; //keeps track of ticketIds to their owners
     private playersTickets: PersistentMap<string, Tickets>; // keeps track of noOfTickets each player has bought
 
-    public static startLottery(id: i32, noOfDays: u32): Lottery { //static method that takses a payload and returns a new Product object
+    public static newLottery(id: i32, noOfDays: u32): Lottery { //static method that takses a payload and returns a new Product object
         const lottery = new Lottery();
         lottery.id = id;
         lottery.winner = "";
@@ -222,7 +222,7 @@ export function set_operator(operator: string): void {
 }
 
 export function get_operator(): string {
-    return storage.getPrimitive<string>("operator", "lottery.blockydevjoe.testnet")
+    return storage.getPrimitive<string>("operator", "lottery_v2.blockydevjoe.testnet")
 }
 
 //Rollover Status

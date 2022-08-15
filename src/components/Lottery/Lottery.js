@@ -13,7 +13,8 @@ import { init } from "../../utils/lottery";
 const Lottery = () => {
   const account = window.walletConnection.account();
   const [loading, setLoading] = useState(false);
-  const [lotteryStatus, setLotteryStatus] = useState("0");
+  const [lotteryStatus, setLotteryStatus] = useState(0);
+  const [currentId, setCurrentId] = useState(0);
   const [currLottery, setCurrLottery] = useState({});
   const [prevLottery, setPrevLottery] = useState({});
   const [ticketPrice, setTicketPrice] = useState(0);
@@ -26,6 +27,7 @@ const Lottery = () => {
     try {
       setLoading(true);
       const lotteryId = await lottery.getLotteryId();
+      setCurrentId(lotteryId)
       const playerId = account.accountId;
       if (lotteryId > 1) {
         const prevLotteryID = lotteryId - 1;
@@ -38,7 +40,6 @@ const Lottery = () => {
         setPreviousLotteryPlayerTickets(_playerTickets);
       }
       const _lottery = await lottery.getLottery(lotteryId);
-      const _ticketPrice = await lottery.getTicketPrice();
       const _playerTickets = await lottery.getPlayerTickets({
         id: lotteryId,
         playerId,
@@ -47,7 +48,7 @@ const Lottery = () => {
       const status = await lottery.getLotteryStatus();
       setPlayerTicket(_playerTickets);
       setCurrLottery(_lottery ? _lottery : init);
-      setTicketPrice(_ticketPrice);
+      setTicketPrice(_lottery ? _lottery.lotteryPrice : 0);
       setLotteryStatus(status);
     } catch (e) {
       console.log({ e });
@@ -85,67 +86,76 @@ const Lottery = () => {
         <>
           <div className="container">
             <div className="tabs-container header">
-              <div className="tab">Current Lottery</div>
+              {lotteryStatus !== 0 ?
+                  <div className="tab">Current Lottery</div>
+                  :
+                  <div className="tab">Lottery dApp will be starting soon..</div>
+              }
             </div>
-            <div className="lottery-container">
-              <div className="lottery-header">
-                <div>
-                  <p>
-                    <strong>ID: </strong> {currLottery.id}
-                  </p>
-                  <p>
-                    <strong>Lottery Ends: </strong>{" "}
-                    {convertTime(currLottery.lotteryEndTime)}
-                  </p>
-                  <p>
-                    <strong>Status: </strong>{" "}
-                    {checkStatus(lotteryStatus, currLottery.lotteryEndTime)}
-                  </p>
-                </div>
-              </div>
-              <div className="lottery-body">
-                <p>
-                  <strong>Price Per Ticket: </strong>{" "}
-                  {utils.format.formatNearAmount(ticketPrice)} NEAR
-                </p>
-                <p>
-                  <strong>No Of tickets Sold: </strong>
-                  {currLottery.noOfTicketsSold}
-                </p>
-                <p>
-                  <strong>Participants: </strong>
-                  {currLottery.noOfPlayers}
-                </p>
-                <p>
-                  <strong>Prize: </strong>{" "}
-                  {Number(
-                    utils.format.formatNearAmount(currLottery.amountInLottery)
-                  ) / 2}{" "}
-                  NEAR
-                </p>
-                <p>
-                  <strong>Your Tickets: </strong>
-                  {playerTickets}
-                </p>
-              </div>
-              <div className="lottery-footer">
-                <Button
-                  variant="success"
-                  className="buy-lottery-btn"
-                  onClick={() => openModal(true)}
-                >
-                  Buy Ticket
-                </Button>
-              </div>
-            </div>
+              {lotteryStatus !== 0 &&
+                  <div className="lottery-container">
+                      <div className="lottery-header">
+                          <div>
+                              <p>
+                                  <strong>ID: </strong> {currLottery.id}
+                              </p>
+                              <p>
+                                  <strong>Lottery Ends: </strong>{" "}
+                                  {convertTime(currLottery.lotteryEndTime)}
+                              </p>
+                              <p>
+                                  <strong>Status: </strong>{" "}
+                                  {checkStatus(lotteryStatus, currLottery.lotteryEndTime)}
+                              </p>
+                          </div>
+                      </div>
+                      <div className="lottery-body">
+                          <p>
+                              <strong>Price Per Ticket: </strong>{" "}
+                              {currentId !== 0 ? utils.format.formatNearAmount(ticketPrice) : '-'} NEAR
+                          </p>
+                          <p>
+                              <strong>No Of tickets Sold: </strong>
+                              {currLottery.noOfTicketsSold}
+                          </p>
+                          <p>
+                              <strong>Participants: </strong>
+                              {currLottery.noOfPlayers}
+                          </p>
+                          <p>
+                              <strong>Prize: </strong>{" "}
+                              {Number(
+                                  utils.format.formatNearAmount(currLottery.amountInLottery)
+                              ) / 2}{" "}
+                              NEAR
+                          </p>
+                          <p>
+                              <strong>Your Tickets: </strong>
+                              {playerTickets}
+                          </p>
+                      </div>
+                    {(currentId !== 0 && new Date() <= currLottery.lotteryEndTime/1000000) &&
+                        <div className="lottery-footer">
+                          <Button
+                              variant="success"
+                              className="buy-lottery-btn"
+                              onClick={() => openModal(true)}
+                          >
+                            Buy Ticket
+                          </Button>
+                        </div>
+                    }
+                  </div>
+              }
           </div>
 
-          <PrevRounds
-            playerId={account.accountId}
-            prevLottery={prevLottery}
-            ticketPrice={ticketPrice}
-            previousLotteryPlayerTickets={previousLotteryPlayerTickets}
-          />
+            {lotteryStatus !== 0 && currentId > 1 &&
+                <PrevRounds
+                    playerId={account.accountId}
+                    prevLottery={prevLottery}
+                    previousLotteryPlayerTickets={previousLotteryPlayerTickets}
+                />
+            }
         </>
       ) : (
         <Loader />

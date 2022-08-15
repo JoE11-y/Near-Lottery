@@ -23,7 +23,7 @@ export function checkStatus(status, lotteryEndTime) {
   const now = new Date();
   const end = new Date(lotteryEndTime / 1000000);
 
-  if (now > end) {
+  if (status === 2 && lotteryEndTime !== 0 && now > end) {
     return "Ended, Waiting for payouts";
   } else {
     switch (status) {

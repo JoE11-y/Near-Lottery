@@ -31,7 +31,10 @@ const PrevRounds = ({
       return;
     }
     const result = await getLottery(lotteryID);
-    const _playerTickets = await getPlayerTickets({ playerId, lotteryId });
+    const _playerTickets = await getPlayerTickets({
+      id: lotteryID,
+      playerId: playerId,
+    });
     setLottery(result);
     setPlayerTicket(_playerTickets);
     setLotteryID(lotteryID);
@@ -47,7 +50,10 @@ const PrevRounds = ({
       return;
     }
     const result = await getLottery(lotteryID);
-    const _playerTickets = await getPlayerTickets({ playerId, lotteryId });
+    const _playerTickets = await getPlayerTickets({
+      id: lotteryID,
+      playerId: playerId,
+    });
     setPlayerTicket(_playerTickets);
     setLottery(result);
     setLotteryID(lotteryID);

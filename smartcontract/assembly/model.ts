@@ -40,7 +40,7 @@ export class Lottery {
     private ticketIds: PersistentMap<u32, string>; //keeps track of ticketIds to their owners
     private playersTickets: PersistentMap<string, Tickets>; // keeps track of noOfTickets each player has bought
 
-    public static newLottery(id: i32, noOfDays: u32): Lottery { //static method that takses a payload and returns a new Product object
+    public static newLottery(id: i32, noOfHours: u32): Lottery { //static method that takses a payload and returns a new Product object
         const lottery = new Lottery();
         lottery.id = id;
         lottery.winner = "";
@@ -50,7 +50,7 @@ export class Lottery {
         lottery.amountInLottery = u128.from(0);
         lottery.lotteryPrice = get_ticket_price();
         lottery.lotteryStartTime = context.blockTimestamp;
-        lottery.lotteryEndTime = context.blockTimestamp + (interval * noOfDays);
+        lottery.lotteryEndTime = context.blockTimestamp + (interval * noOfHours);
         lottery.ticketIds = new PersistentMap<u32, string>('l' + id.toString() + 'ids')
         lottery.playersTickets = new PersistentMap<string, Tickets>('l' + id.toString() + 'tkts');
         return lottery;
@@ -156,7 +156,7 @@ export function getLottery(id: i32): Lottery {
 }
 
 //1 day in nanoseconds
-const interval: u64 = (24 * 60 * 60 * 1000 * 1000000);
+const interval: u64 = (60 * 60 * 1000 * 1000000);
 
 @nearBindgen
 export class ILottery {

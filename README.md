@@ -9,6 +9,9 @@ Lottery is currently set to run every 2 days as a default.
 
 Check **Operator** section for how to operate lottery.
 
+## Update
+Due to request from testers, lottery has been set to run every 3 hours, but this parameter can be modified on each lottery start.
+
 
 ## 1. Tech Stack
 This boilerplate uses the following tech stack:
@@ -95,7 +98,7 @@ This sets the operator account giving that account access to functions like star
 ### 4.2 Starting the Lottery
 
 ```bash
-near call {contractname} startLottery '{"TICKET_PRICE": "{ticketprice}", "noOfDays": "{noOfDays}"}' --accountId={operatorAccount}
+near call {contractname} startLottery '{"TICKET_PRICE": "{ticketprice}", "noOfHours": "{noOfHours}"}' --accountId={operatorAccount}
 ```
 
 This command will start a new lottery session

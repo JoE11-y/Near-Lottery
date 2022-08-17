@@ -25,7 +25,7 @@ export function init(operator: string): void {
  * @param TICKET_PRICE Price of the next lottery in u128 format
  * @param noOfDays How many days after this lottery expires
  */
-export function startLottery(TICKET_PRICE: u128, noOfDays: u32): void {
+export function startLottery(TICKET_PRICE: u128, noOfHours: u32): void {
     // check if context is operator
     assert(context.sender == lottery.get_operator(), "Access restricted to lottery operator")
 
@@ -44,7 +44,7 @@ export function startLottery(TICKET_PRICE: u128, noOfDays: u32): void {
         const _lottery = lottery.getLottery(id);
 
         // restart lottery
-        _lottery.restartLottery(noOfDays);
+        _lottery.restartLottery(noOfHours);
 
         // update lottery in storage
         lottery.Lotteries.set(id, _lottery);
@@ -55,7 +55,7 @@ export function startLottery(TICKET_PRICE: u128, noOfDays: u32): void {
         let newId: i32 = id + 1;
 
         // start lottery
-        lottery.Lotteries.set(newId, lottery.Lottery.newLottery(newId, noOfDays));
+        lottery.Lotteries.set(newId, lottery.Lottery.newLottery(newId, noOfHours));
 
         // update lottery
         lottery.updateLotteryId(newId);
@@ -67,7 +67,6 @@ export function startLottery(TICKET_PRICE: u128, noOfDays: u32): void {
     lottery.setState(lottery.State.ACTIVE);
 
 }
-
 
 /**
  * buyTicket function used to buy tickets for the current lottery.

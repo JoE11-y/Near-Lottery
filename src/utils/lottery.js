@@ -16,7 +16,8 @@ export function buyTicket({ noOfTickets, totalAmount }) {
 }
 
 export function getPlayerTickets({ id, playerId }) {
-  return window.contract.getPlayerTickets({ id, playerId });
+  const lotteryId = Number(id);
+  return window.contract.getPlayerTickets({ id: lotteryId, playerId });
 }
 
 export function getLotteryStatus() {

@@ -119,6 +119,17 @@ near call {contractname} payoutWinner --accountId={operatorAccount}
 
 This command pays out the winner, after the winning ticket has been gotten. The function also sets the lottery state to idle, meaning a new lottery session can be started. It also sends out a portion of the remaining amount in the lottery to the contract owner, while the rest are left as storage fees for the contract.
 
+### 5.4 Example Scenarios
+- To start the Lottery
+![start Lottery](./src/components/assets/img/1startLottery.png)
+- To get Winning tickets
+    - Successful Lottery
+    ![getwinningticket](./src/components/assets/img/2getWinningTicketsSuccess.png)
+    - Restart Lottery
+    ![getWinningticket2](./src/components/assets/img/2getWinningTIcketFail.png)
+- To pay out to winner
+![payout](./src/components/assets/img/3payoutWinners.png)
+
 
 ## Dev Opinion
 A much better implementation would be to use either oracles or a collab with chainlink to use their keeper service for contract automation

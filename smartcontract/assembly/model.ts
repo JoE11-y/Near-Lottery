@@ -40,7 +40,7 @@ export class Lottery {
     private ticketIds: PersistentMap<u32, string>; //keeps track of ticketIds to their owners
     private playersTickets: PersistentMap<string, Tickets>; // keeps track of noOfTickets each player has bought
 
-    public static newLottery(id: i32, noOfHours: u32): Lottery { //static method that takses a payload and returns a new Product object
+    public static newLottery(id: i32, noOfMins: u32): Lottery { //static method that takses a payload and returns a new Product object
         const lottery = new Lottery();
         lottery.id = id;
         lottery.winner = "";
@@ -50,17 +50,17 @@ export class Lottery {
         lottery.amountInLottery = u128.from(0);
         lottery.lotteryPrice = get_ticket_price();
         lottery.lotteryStartTime = context.blockTimestamp;
-        lottery.lotteryEndTime = context.blockTimestamp + (interval * noOfHours);
+        lottery.lotteryEndTime = context.blockTimestamp + (interval * noOfMins);
         lottery.ticketIds = new PersistentMap<u32, string>('l' + id.toString() + 'ids')
         lottery.playersTickets = new PersistentMap<string, Tickets>('l' + id.toString() + 'tkts');
         return lottery;
     }
 
     // if lottery is not valid, we simply just restart that same lottery
-    public restartLottery(noOfDays: u32): void {
+    public restartLottery(noOfMins: u32): void {
         this.lotteryPrice = get_ticket_price();
         this.lotteryStartTime = context.blockTimestamp;
-        this.lotteryEndTime = context.blockTimestamp + (interval * noOfDays);
+        this.lotteryEndTime = context.blockTimestamp + (interval * noOfMins);
         update_rollover_status(false);
     }
 
@@ -156,7 +156,7 @@ export function getLottery(id: i32): Lottery {
 }
 
 //1 day in nanoseconds
-const interval: u64 = (60 * 60 * 1000 * 1000000);
+const interval: u64 = (60 * 1000 * 1000000);
 
 @nearBindgen
 export class ILottery {
@@ -226,7 +226,7 @@ export function get_operator(): string {
 }
 
 //Rollover Status
-function update_rollover_status(status: bool): void {
+export function update_rollover_status(status: bool): void {
     storage.set<bool>('rollover', status)
 }
 export function check_rollover(): bool {

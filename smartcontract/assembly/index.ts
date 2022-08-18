@@ -25,7 +25,7 @@ export function init(operator: string): void {
  * @param TICKET_PRICE Price of the next lottery in u128 format
  * @param noOfDays How many days after this lottery expires
  */
-export function startLottery(TICKET_PRICE: u128, noOfHours: u32): void {
+export function startLottery(TICKET_PRICE: u128, noOfMins: u32): void {
     // check if context is operator
     assert(context.sender == lottery.get_operator(), "Access restricted to lottery operator")
 
@@ -44,7 +44,7 @@ export function startLottery(TICKET_PRICE: u128, noOfHours: u32): void {
         const _lottery = lottery.getLottery(id);
 
         // restart lottery
-        _lottery.restartLottery(noOfHours);
+        _lottery.restartLottery(noOfMins);
 
         // update lottery in storage
         lottery.Lotteries.set(id, _lottery);
@@ -55,7 +55,7 @@ export function startLottery(TICKET_PRICE: u128, noOfHours: u32): void {
         let newId: i32 = id + 1;
 
         // start lottery
-        lottery.Lotteries.set(newId, lottery.Lottery.newLottery(newId, noOfHours));
+        lottery.Lotteries.set(newId, lottery.Lottery.newLottery(newId, noOfMins));
 
         // update lottery
         lottery.updateLotteryId(newId);
@@ -116,8 +116,10 @@ export function getWinningTicket(): void {
     // update lottery in storage
     lottery.Lotteries.set(id, _lottery);
 
-    if (_lottery.winner) {
+    if (_lottery.winner != "") {
         logging.log("Winning Ticket Gotten")
+    } else {
+        logging.log("Not Enough players please restart the Lottery")
     }
 }
 

@@ -98,7 +98,7 @@ This sets the operator account giving that account access to functions like star
 ### 4.2 Starting the Lottery
 
 ```bash
-near call {contractname} startLottery '{"TICKET_PRICE": "{ticketprice}", "noOfHours": "{noOfHours}"}' --accountId={operatorAccount}
+near call {contractname} startLottery '{"TICKET_PRICE": "{ticketprice}", "noOfMins": "{noOfMins}"}' --accountId={operatorAccount}
 ```
 
 This command will start a new lottery session

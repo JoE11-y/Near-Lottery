@@ -1,7 +1,6 @@
 {
   "name": "nearlottery",
   "version": "0.1.0",
-  "homepage":"https://JoE11-y.github.io/Near-Lottery",
   "private": true,
   "dependencies": {
     "@metamask/jazzicon": "^2.0.0",

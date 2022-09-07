@@ -2,8 +2,6 @@
 
 [link to dapp](https://JoE11-y.github.io/Near-Lottery)
 
-This is a re-implementation of my CELO201 Course Bounty Submission for DACADE. This implementation is built to work with the Near Protocol Testnet.
-
 A simple lottery contract that awards a lucky winner with a half of the generated prizepot.
 Lottery is currently set to run every 2 days as a default.
 
